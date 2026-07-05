@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Simulation
+sim/build/
+*.vcd
+*.fst
+
+# Quartus
+quartus/db/
+quartus/incremental_db/
+quartus/output_files/
+quartus/greybox_tmp/
+quartus/*.qws
+quartus/*.qdf
+quartus/*.rpt
+quartus/*.summary
+quartus/*.smsg
+quartus/*.done
+quartus/*.jdi
+quartus/*.pin
+quartus/*.sld
