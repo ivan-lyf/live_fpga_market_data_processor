@@ -9,13 +9,13 @@ define run_tb
 	@grep -q '^PASS' $(BUILD)/$(1).log
 endef
 
-.PHONY: all test sim sim-uart clean
+.PHONY: all test sim sim-uart sim-parser clean
 
 all: test
 
 test: sim
 
-sim: sim-uart
+sim: sim-uart sim-parser
 
 $(BUILD):
 	mkdir -p $@
@@ -23,6 +23,10 @@ $(BUILD):
 sim-uart: | $(BUILD)
 	$(IVERILOG) -g2012 -o $(BUILD)/tb_uart_rx.vvp rtl/uart_rx.sv sim/tb_uart_rx.sv
 	$(call run_tb,tb_uart_rx)
+
+sim-parser: | $(BUILD)
+	$(IVERILOG) -g2012 -o $(BUILD)/tb_packet_parser.vvp rtl/mdp_pkg.sv rtl/packet_parser.sv sim/tb_packet_parser.sv
+	$(call run_tb,tb_packet_parser)
 
 clean:
 	rm -rf $(BUILD)
