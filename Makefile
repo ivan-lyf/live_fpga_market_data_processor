@@ -1,7 +1,16 @@
 IVERILOG ?= iverilog
 VVP      ?= vvp
+VERILATOR ?= verilator
 
 BUILD := sim/build
+
+RTL := rtl/mdp_pkg.sv \
+       rtl/uart_rx.sv \
+       rtl/packet_parser.sv \
+       rtl/trade_book.sv \
+       rtl/bin2bcd.sv \
+       rtl/hex7seg.sv \
+       rtl/de10_lite_top.sv
 
 # Fail unless the testbench prints PASS.
 define run_tb
@@ -9,7 +18,7 @@ define run_tb
 	@grep -q '^PASS' $(BUILD)/$(1).log
 endef
 
-.PHONY: all test sim sim-uart sim-parser clean
+.PHONY: all test sim sim-uart sim-parser lint clean
 
 all: test
 
@@ -27,6 +36,9 @@ sim-uart: | $(BUILD)
 sim-parser: | $(BUILD)
 	$(IVERILOG) -g2012 -o $(BUILD)/tb_packet_parser.vvp rtl/mdp_pkg.sv rtl/packet_parser.sv sim/tb_packet_parser.sv
 	$(call run_tb,tb_packet_parser)
+
+lint:
+	$(VERILATOR) --lint-only -Wall --top-module de10_lite_top $(RTL)
 
 clean:
 	rm -rf $(BUILD)
