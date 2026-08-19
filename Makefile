@@ -1,3 +1,4 @@
+PYTHON   ?= python3
 IVERILOG ?= iverilog
 VVP      ?= vvp
 VERILATOR ?= verilator
@@ -18,11 +19,14 @@ define run_tb
 	@grep -q '^PASS' $(BUILD)/$(1).log
 endef
 
-.PHONY: all test sim sim-uart sim-parser lint clean
+.PHONY: all test pytest sim sim-uart sim-parser lint clean
 
 all: test
 
-test: sim
+test: pytest sim
+
+pytest:
+	$(PYTHON) -m unittest discover -s tests -t . -v
 
 sim: sim-uart sim-parser
 
