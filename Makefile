@@ -3,7 +3,8 @@ IVERILOG ?= iverilog
 VVP      ?= vvp
 VERILATOR ?= verilator
 
-BUILD := sim/build
+BUILD   := sim/build
+VECTORS := $(BUILD)/vectors
 
 RTL := rtl/mdp_pkg.sv \
        rtl/uart_rx.sv \
@@ -19,7 +20,7 @@ define run_tb
 	@grep -q '^PASS' $(BUILD)/$(1).log
 endef
 
-.PHONY: all test pytest sim sim-uart sim-parser lint clean
+.PHONY: all test pytest sim sim-uart sim-parser sim-top vectors lint clean
 
 all: test
 
@@ -28,7 +29,7 @@ test: pytest sim
 pytest:
 	$(PYTHON) -m unittest discover -s tests -t . -v
 
-sim: sim-uart sim-parser
+sim: sim-uart sim-parser sim-top
 
 $(BUILD):
 	mkdir -p $@
@@ -40,6 +41,13 @@ sim-uart: | $(BUILD)
 sim-parser: | $(BUILD)
 	$(IVERILOG) -g2012 -o $(BUILD)/tb_packet_parser.vvp rtl/mdp_pkg.sv rtl/packet_parser.sv sim/tb_packet_parser.sv
 	$(call run_tb,tb_packet_parser)
+
+vectors: | $(BUILD)
+	$(PYTHON) -m host.gen_vectors --out $(VECTORS)
+
+sim-top: vectors
+	$(IVERILOG) -g2012 -I $(VECTORS) -o $(BUILD)/tb_top.vvp $(RTL) sim/tb_top.sv
+	$(call run_tb,tb_top)
 
 lint:
 	$(VERILATOR) --lint-only -Wall --top-module de10_lite_top $(RTL)
